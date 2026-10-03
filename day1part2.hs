@@ -43,9 +43,9 @@ samePlace :: Position -> Position -> Bool
 samePlace (Position _ xa ya) (Position _ xb yb) = (xa == xb) && (ya == yb)
 
 seenPlace :: [Position] -> Bool
-seenPlace ([]) = error "Unexpek"
+seenPlace [] = False
 seenPlace (x:[]) = False
-seenPlace trail = any (samePlace (last trail)) (init trail)
+seenPlace (x:xs) = any (samePlace x) xs
 
 step :: Position -> Position
 step (Position N x y) = Position N (x + 0) (y + 1)
@@ -57,7 +57,7 @@ step (Position W x y) = Position W (x - 1) (y + 0)
 walkStep :: [Position] -> [Position]
 walkStep trail
   | seenPlace trail = trail
-  | otherwise       = trail ++ [step (last trail)]
+  | otherwise       = step (head trail) : trail
 
 
 walkSteps :: [Position] -> Int -> [Position]
@@ -66,7 +66,7 @@ walkSteps trail s = walkSteps (walkStep trail) (s - 1)
 
 addDirectionToTrail :: [Position] -> Direction -> [Position]
 -- important not to add a new item to the list, because that would break seenPlace
-addDirectionToTrail trail dir = (init trail) ++ [addDirectionToPosition (last trail) dir]
+addDirectionToTrail (x:xs) dir = (addDirectionToPosition x dir) : xs
 
 doCommand :: [Position] -> (Direction, Int) -> [Position]
 doCommand trail (dir, steps) = walkSteps (addDirectionToTrail trail dir) steps
@@ -84,7 +84,7 @@ day1Part1 s = positionDistance start end
     start = Position N 0 0
     commands = parseCommands s
     trail = march commands [start]
-    end = last trail
+    end = head trail
 
 main = putStrLn (show (day1Part1 inputText))
   where
