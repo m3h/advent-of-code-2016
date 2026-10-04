@@ -1,4 +1,6 @@
 import qualified Data.Maybe;
+import Data.List;
+import Data.Char;
 
 data Direction = L | R deriving (Show, Eq)
 
@@ -12,6 +14,20 @@ charToDirection 'R' = Just R
 charToDirection 'L' = Just L
 charToDirection _   = Nothing
 
+stripLeft :: String -> String
+stripLeft [] = []
+stripLeft (h:s)
+  | isSpace h = stripLeft s
+  | otherwise = h:s
+
+stripRight :: String -> String
+stripRight ws = case unsnoc ws of
+  Just (s, t) -> if isSpace t then stripRight s else ws
+  Nothing -> ws
+
+strip :: String -> String
+strip s = stripLeft (stripRight s)
+
 parseSteps :: String -> Int
 parseSteps s = read (init s)
 
@@ -19,7 +35,7 @@ parseCommand :: String -> (Direction, Int)
 parseCommand s = (Data.Maybe.fromJust (charToDirection (head s)), parseSteps (tail s))
 
 parseCommands :: String -> [(Direction, Int)]
-parseCommands s = map parseCommand (words (s ++ ","))
+parseCommands s = map parseCommand (words ((strip s) ++ ","))
 
 
 data Cardinal = N | E | S | W deriving (Show, Eq)
@@ -59,6 +75,6 @@ day1Part1 s = positionDistance start end
     commands = parseCommands s
     end = march commands start
 
-main = putStrLn (show (day1Part1 inputText))
-  where
-    inputText = "REDACTED"
+main = do
+  inputText <- readFile "inputs/day1"
+  putStrLn (show (day1Part1 inputText))
